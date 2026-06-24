@@ -1,0 +1,10 @@
+chromadb
+groq
+streamlit
+python-dotenv
+pandas
+Pillow
+numpy
+torch
+torchvision
+transformers
