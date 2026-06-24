@@ -2,12 +2,16 @@ import pandas as pd
 import chromadb
 import numpy as np
 import os
+from pathlib import Path
 from PIL import Image
 from transformers import CLIPModel, CLIPProcessor
 
+# Set base directory
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 def main():
     # Load products
-    df = pd.read_csv("./data/products.csv")
+    df = pd.read_csv(BASE_DIR / "data" / "products.csv")
     
     # Initialize CLIP model and processor
     model_name = "patrickjohncyh/fashion-clip"
@@ -15,7 +19,7 @@ def main():
     processor = CLIPProcessor.from_pretrained(model_name)
     
     # Initialize ChromaDB
-    client = chromadb.PersistentClient(path="./chroma_db")
+    client = chromadb.PersistentClient(path=str(BASE_DIR / "chroma_db"))
     
     # Delete existing collection if it exists (to ensure fresh start)
     try:
@@ -33,9 +37,9 @@ def main():
     
     for idx, row in df.iterrows():
         # Build image path
-        img_path = "./data/" + row["image"]
+        img_path = BASE_DIR / "data" / row["image"]
         image = None
-        if os.path.exists(img_path):
+        if img_path.exists():
             try:
                 image = Image.open(img_path).convert("RGB")
             except Exception as e:

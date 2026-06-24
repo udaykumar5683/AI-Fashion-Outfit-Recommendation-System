@@ -1,5 +1,6 @@
 import pandas as pd
 import chromadb
+from pathlib import Path
 
 OCCASION_MAP = {
     "beach": ["vacation", "casual", "sports"],
@@ -119,8 +120,11 @@ BEACH_EXCLUSIONS = [
     "Wedding Sarees", "Suits", "Formal Shoes", "Heels", "Boots"
 ]
 
+# Set base directory
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 # Initialize ChromaDB
-client = chromadb.PersistentClient(path="./chroma_db")
+client = chromadb.PersistentClient(path=str(BASE_DIR / "chroma_db"))
 collection = client.get_or_create_collection(name="fashion_products")
 
 def get_outfit(intent_dict):
@@ -129,7 +133,7 @@ def get_outfit(intent_dict):
     db_occasions = OCCASION_MAP.get(raw_occasion, ["casual"])
     
     # Load curated outfits
-    outfits_df = pd.read_csv("./data/outfits.csv")
+    outfits_df = pd.read_csv(BASE_DIR / "data" / "outfits.csv")
     curated_ids = []
     if gender and raw_occasion:
         matching_outfits = outfits_df[

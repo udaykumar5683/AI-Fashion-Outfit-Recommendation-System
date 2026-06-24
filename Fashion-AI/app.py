@@ -2,8 +2,12 @@ import streamlit as st
 import chromadb
 import sys
 import os
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath("./src"))
+# Set base directory
+BASE_DIR = Path(__file__).resolve().parent
+
+sys.path.insert(0, str(BASE_DIR / "src"))
 
 from src import intent_parser, outfit_engine, reasoning
 
@@ -100,7 +104,7 @@ for msg in st.session_state.messages:
             for i, role in enumerate(roles):
                 item = msg["outfit"][role]
                 with cols[i]:
-                    st.image("./data/" + item["image"], use_container_width=True)
+                    st.image(str(BASE_DIR / "data" / item["image"]), use_container_width=True)
                     st.markdown(f"<div class='category-badge'>{item['category_label']}</div>", unsafe_allow_html=True)
                     st.markdown(f"<div class='product-name'>{item['name']}</div>", unsafe_allow_html=True)
                     st.markdown(f"<div class='product-brand'>{item['brand']}</div>", unsafe_allow_html=True)
@@ -142,7 +146,7 @@ if prompt := st.chat_input("What outfit are you looking for?"):
                 for i, role in enumerate(roles):
                     item = outfit[role]
                     with cols[i]:
-                        st.image("./data/" + item["image"], use_container_width=True)
+                        st.image(str(BASE_DIR / "data" / item["image"]), use_container_width=True)
                         st.markdown(f"<div class='category-badge'>{item['category_label']}</div>", unsafe_allow_html=True)
                         st.markdown(f"<div class='product-name'>{item['name']}</div>", unsafe_allow_html=True)
                         st.markdown(f"<div class='product-brand'>{item['brand']}</div>", unsafe_allow_html=True)
@@ -161,7 +165,7 @@ if prompt := st.chat_input("What outfit are you looking for?"):
 # Initialize ChromaDB
 @st.cache_resource
 def get_collection():
-    client = chromadb.PersistentClient(path="./chroma_db")
+    client = chromadb.PersistentClient(path=str(BASE_DIR / "chroma_db"))
     return client.get_or_create_collection(name="fashion_products")
 
 # Call to initialize
