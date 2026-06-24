@@ -100,17 +100,20 @@ for msg in st.session_state.messages:
             # Display outfit
             st.markdown(f"### Here's your outfit for {msg['occasion']}:")
             roles = list(msg["outfit"].keys())
-            cols = st.columns(len(roles))
-            for i, role in enumerate(roles):
-                item = msg["outfit"][role]
-                with cols[i]:
-                    st.image(str(BASE_DIR / "data" / item["image"]), use_container_width=True)
-                    st.markdown(f"<div class='category-badge'>{item['category_label']}</div>", unsafe_allow_html=True)
-                    st.markdown(f"<div class='product-name'>{item['name']}</div>", unsafe_allow_html=True)
-                    st.markdown(f"<div class='product-brand'>{item['brand']}</div>", unsafe_allow_html=True)
-                    st.markdown(f"<div class='product-price'>₹{item['price_inr']:.0f}</div>", unsafe_allow_html=True)
-            st.divider()
-            st.info(msg["reasoning"])
+            if len(roles) > 0:
+                cols = st.columns(len(roles))
+                for i, role in enumerate(roles):
+                    item = msg["outfit"][role]
+                    with cols[i]:
+                        st.image(str(BASE_DIR / "data" / item["image"]), use_container_width=True)
+                        st.markdown(f"<div class='category-badge'>{item['category_label']}</div>", unsafe_allow_html=True)
+                        st.markdown(f"<div class='product-name'>{item['name']}</div>", unsafe_allow_html=True)
+                        st.markdown(f"<div class='product-brand'>{item['brand']}</div>", unsafe_allow_html=True)
+                        st.markdown(f"<div class='product-price'>₹{item['price_inr']:.0f}</div>", unsafe_allow_html=True)
+                st.divider()
+                st.info(msg["reasoning"])
+            else:
+                st.warning("No outfit items found.")
         else:
             st.write(msg["content"])
 
@@ -142,25 +145,34 @@ if prompt := st.chat_input("What outfit are you looking for?"):
             with st.chat_message("assistant"):
                 st.markdown(f"### Here's your outfit for {intent.get('occasion', 'your occasion')}:")
                 roles = list(outfit.keys())
-                cols = st.columns(len(roles))
-                for i, role in enumerate(roles):
-                    item = outfit[role]
-                    with cols[i]:
-                        st.image(str(BASE_DIR / "data" / item["image"]), use_container_width=True)
-                        st.markdown(f"<div class='category-badge'>{item['category_label']}</div>", unsafe_allow_html=True)
-                        st.markdown(f"<div class='product-name'>{item['name']}</div>", unsafe_allow_html=True)
-                        st.markdown(f"<div class='product-brand'>{item['brand']}</div>", unsafe_allow_html=True)
-                        st.markdown(f"<div class='product-price'>₹{item['price_inr']:.0f}</div>", unsafe_allow_html=True)
-                st.divider()
-                st.info(reasoning_text)
+                if len(roles) > 0:
+                    cols = st.columns(len(roles))
+                    for i, role in enumerate(roles):
+                        item = outfit[role]
+                        with cols[i]:
+                            st.image(str(BASE_DIR / "data" / item["image"]), use_container_width=True)
+                            st.markdown(f"<div class='category-badge'>{item['category_label']}</div>", unsafe_allow_html=True)
+                            st.markdown(f"<div class='product-name'>{item['name']}</div>", unsafe_allow_html=True)
+                            st.markdown(f"<div class='product-brand'>{item['brand']}</div>", unsafe_allow_html=True)
+                            st.markdown(f"<div class='product-price'>₹{item['price_inr']:.0f}</div>", unsafe_allow_html=True)
+                    st.divider()
+                    st.info(reasoning_text)
+                else:
+                    st.error("Unable to generate outfit recommendation. Please try a different occasion or style.")
             
-            # Save to session state
-            st.session_state.messages.append({
-                "role": "assistant",
-                "outfit": outfit,
-                "reasoning": reasoning_text,
-                "occasion": intent.get("occasion")
-            })
+            # Save to session state only if we have an outfit
+            if len(roles) > 0:
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "outfit": outfit,
+                    "reasoning": reasoning_text,
+                    "occasion": intent.get("occasion")
+                })
+            else:
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": "Unable to generate outfit recommendation. Please try a different occasion or style."
+                })
 
 # Initialize ChromaDB
 @st.cache_resource
